@@ -103,8 +103,7 @@ nav { display: flex; gap: .5rem; }
 .btn-dislike:hover:not(:disabled) { background: #ef4444; color: #fff; }
 .btn-dislike.voted { background: #ef4444; color: #fff; }
 
-.btn-vote:disabled:not(.voted) { cursor: not-allowed; opacity: 0.45; }
-.btn-vote:disabled.voted        { cursor: default; }
+.btn-vote:disabled { cursor: default; }
 
 .voted-message { text-align: center; font-size: .95rem; color: #16a34a; font-weight: 500; }
 

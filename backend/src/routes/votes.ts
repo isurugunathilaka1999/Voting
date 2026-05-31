@@ -5,7 +5,10 @@ const router = Router();
 
 router.post('/:candidateId', (req, res): void => {
   const id = Number(req.params.candidateId);
-  const { voteType } = req.body as { voteType?: string };
+  const { voteType, previousVoteType } = req.body as {
+    voteType?: string;
+    previousVoteType?: string;
+  };
 
   if (voteType !== 'like' && voteType !== 'dislike') {
     res.status(400).json({ error: 'voteType must be "like" or "dislike"' });
@@ -16,6 +19,16 @@ router.post('/:candidateId', (req, res): void => {
   if (!candidate) {
     res.status(404).json({ error: 'Candidate not found' });
     return;
+  }
+
+  // Changing vote: remove one row of the previous type
+  if (previousVoteType === 'like' || previousVoteType === 'dislike') {
+    db.run(
+      `DELETE FROM votes WHERE id = (
+         SELECT id FROM votes WHERE candidate_id = ? AND vote_type = ? LIMIT 1
+       )`,
+      [id, previousVoteType]
+    );
   }
 
   db.run('INSERT INTO votes (candidate_id, vote_type) VALUES (?, ?)', [id, voteType]);

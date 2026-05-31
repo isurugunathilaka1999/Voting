@@ -44,13 +44,14 @@ export default function VotingPage() {
   }, [fetchCandidates]);
 
   const handleVote = async (candidateId: number, voteType: VoteType) => {
-    if (storedVotes[candidateId]) return;
+    const previousVoteType = storedVotes[candidateId] ?? null;
+    if (previousVoteType === voteType) return; // already voted this way
 
     try {
       const res = await fetch(`/api/votes/${candidateId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ voteType }),
+        body: JSON.stringify({ voteType, previousVoteType }),
       });
 
       if (!res.ok) throw new Error('Vote failed');
