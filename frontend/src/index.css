@@ -74,27 +74,26 @@ nav { display: flex; gap: .5rem; }
 .candidate-description { color: #64748b; font-size: .93rem; margin-top: .2rem; }
 
 /* ── Vote buttons ── */
-.vote-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.vote-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
 .btn-vote {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: .3rem;
-  padding: 1.2rem .75rem;
-  min-height: 100px;
+  gap: .5rem;
+  padding: 1.75rem 1rem;
+  min-height: 130px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   font-weight: 700;
   transition: background .18s, color .18s, transform .12s;
 }
 .btn-vote:active { transform: scale(.96); }
 
-.btn-icon  { font-size: 2rem; line-height: 1; }
-.btn-label { font-size: .95rem; }
-.btn-count { font-size: 1.3rem; }
+.btn-icon  { font-size: 2.8rem; line-height: 1; }
+.btn-label { font-size: 1.1rem; }
 
 .btn-like  { background: #dcfce7; color: #166534; }
 .btn-like:hover:not(:disabled)  { background: #22c55e; color: #fff; }
@@ -104,27 +103,10 @@ nav { display: flex; gap: .5rem; }
 .btn-dislike:hover:not(:disabled) { background: #ef4444; color: #fff; }
 .btn-dislike.voted { background: #ef4444; color: #fff; }
 
-.btn-vote:disabled { cursor: not-allowed; }
+.btn-vote:disabled:not(.voted) { cursor: not-allowed; opacity: 0.45; }
+.btn-vote:disabled.voted        { cursor: default; }
 
-/* ── Vote bar & stats ── */
-.vote-bar {
-  display: flex;
-  height: 7px;
-  border-radius: 4px;
-  overflow: hidden;
-  background: #f1f5f9;
-}
-.bar-like    { background: #22c55e; transition: width .5s ease; }
-.bar-dislike { background: #ef4444; transition: width .5s ease; }
-
-.vote-stats {
-  display: flex;
-  justify-content: space-between;
-  font-size: .82rem;
-  color: #64748b;
-}
-
-.voted-message { text-align: center; font-size: .9rem; color: #16a34a; }
+.voted-message { text-align: center; font-size: .95rem; color: #16a34a; font-weight: 500; }
 
 /* ── Common buttons ── */
 .btn-primary {
