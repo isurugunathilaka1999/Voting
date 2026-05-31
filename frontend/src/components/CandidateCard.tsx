@@ -9,6 +9,14 @@ interface Props {
 export function CandidateCard({ candidate, votedAs, onVote }: Props) {
   return (
     <div className="candidate-card">
+      {candidate.image && (
+        <img
+          src={candidate.image}
+          alt={candidate.name}
+          className="candidate-image"
+        />
+      )}
+
       <div className="candidate-header">
         <h2 className="candidate-name">{candidate.name}</h2>
         {candidate.description && (

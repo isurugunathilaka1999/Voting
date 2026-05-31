@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Candidate } from '../types';
 
 const SESSION_KEY = 'votebox_admin_pwd';
@@ -9,7 +9,10 @@ export default function AdminPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [flash, setFlash] = useState<{ msg: string; type: 'ok' | 'err' } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showFlash = (msg: string, type: 'ok' | 'err' = 'ok') => {
     setFlash({ msg, type });
@@ -22,7 +25,6 @@ export default function AdminPage() {
   }, []);
 
   const adminHeaders = () => ({
-    'Content-Type': 'application/json',
     'x-admin-password': sessionStorage.getItem(SESSION_KEY) ?? '',
   });
 
@@ -30,12 +32,8 @@ export default function AdminPage() {
     const saved = sessionStorage.getItem(SESSION_KEY);
     if (!saved) return;
     fetch('/api/admin/verify', { headers: { 'x-admin-password': saved } }).then(res => {
-      if (res.ok) {
-        setAuthed(true);
-        fetchCandidates();
-      } else {
-        sessionStorage.removeItem(SESSION_KEY);
-      }
+      if (res.ok) { setAuthed(true); fetchCandidates(); }
+      else sessionStorage.removeItem(SESSION_KEY);
     });
   }, [fetchCandidates]);
 
@@ -48,9 +46,7 @@ export default function AdminPage() {
   const login = async () => {
     if (!pwd.trim()) return;
     try {
-      const res = await fetch('/api/admin/verify', {
-        headers: { 'x-admin-password': pwd },
-      });
+      const res = await fetch('/api/admin/verify', { headers: { 'x-admin-password': pwd } });
       if (res.ok) {
         sessionStorage.setItem(SESSION_KEY, pwd);
         setAuthed(true);
@@ -69,18 +65,44 @@ export default function AdminPage() {
     setPwd('');
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(null);
+    }
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const addCandidate = async () => {
     if (!newName.trim()) { showFlash('Name is required', 'err'); return; }
+
+    const formData = new FormData();
+    formData.append('name', newName);
+    formData.append('description', newDesc);
+    if (imageFile) formData.append('image', imageFile);
+
     const res = await fetch('/api/candidates', {
       method: 'POST',
       headers: adminHeaders(),
-      body: JSON.stringify({ name: newName, description: newDesc }),
+      body: formData,
     });
+
     if (res.ok) {
       const c: Candidate = await res.json();
       setCandidates(prev => [c, ...prev]);
       setNewName('');
       setNewDesc('');
+      clearImage();
       showFlash('Candidate added');
     } else {
       showFlash('Failed to add candidate', 'err');
@@ -105,14 +127,10 @@ export default function AdminPage() {
     if (!confirm('Reset ALL votes across all candidates? This cannot be undone.')) return;
     const res = await fetch('/api/admin/reset-votes', {
       method: 'POST',
-      headers: adminHeaders(),
+      headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
     });
-    if (res.ok) {
-      fetchCandidates();
-      showFlash('All votes reset');
-    } else {
-      showFlash('Failed to reset votes', 'err');
-    }
+    if (res.ok) { fetchCandidates(); showFlash('All votes reset'); }
+    else showFlash('Failed to reset votes', 'err');
   };
 
   if (!authed) {
@@ -130,9 +148,7 @@ export default function AdminPage() {
               onChange={e => setPwd(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && login()}
             />
-            <button className="btn-primary" onClick={login}>
-              Login
-            </button>
+            <button className="btn-primary" onClick={login}>Login</button>
           </div>
           {flash && <p className={`flash ${flash.type}`}>{flash.msg}</p>}
         </div>
@@ -148,12 +164,8 @@ export default function AdminPage() {
           <p>Manage candidates and votes</p>
         </div>
         <div className="admin-topbar-actions">
-          <button className="btn-danger" onClick={resetVotes}>
-            Reset All Votes
-          </button>
-          <button className="btn-secondary" onClick={logout}>
-            Logout
-          </button>
+          <button className="btn-danger" onClick={resetVotes}>Reset All Votes</button>
+          <button className="btn-secondary" onClick={logout}>Logout</button>
         </div>
       </div>
 
@@ -176,11 +188,27 @@ export default function AdminPage() {
             placeholder="Description (optional)"
             value={newDesc}
             onChange={e => setNewDesc(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addCandidate()}
           />
-          <button className="btn-primary" onClick={addCandidate}>
-            Add
-          </button>
+        </div>
+
+        <div className="image-upload-row">
+          <label className="upload-label">
+            📷 {imageFile ? imageFile.name : 'Choose photo (optional)'}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+            />
+          </label>
+          {imagePreview && (
+            <div className="image-preview-wrap">
+              <img src={imagePreview} alt="preview" className="image-preview" />
+              <button className="btn-clear-img" onClick={clearImage}>✕</button>
+            </div>
+          )}
+          <button className="btn-primary" onClick={addCandidate}>Add Candidate</button>
         </div>
       </div>
 
@@ -195,6 +223,9 @@ export default function AdminPage() {
               const pct = total > 0 ? Math.round((c.likes / total) * 100) : 0;
               return (
                 <div key={c.id} className="admin-row">
+                  {c.image && (
+                    <img src={c.image} alt={c.name} className="admin-thumb" />
+                  )}
                   <div className="admin-row-info">
                     <strong>{c.name}</strong>
                     {c.description && <span className="admin-desc"> — {c.description}</span>}
@@ -207,10 +238,7 @@ export default function AdminPage() {
                       {total > 0 ? ` · ${pct}% approval` : ''}
                     </span>
                   </div>
-                  <button
-                    className="btn-delete"
-                    onClick={() => deleteCandidate(c.id, c.name)}
-                  >
+                  <button className="btn-delete" onClick={() => deleteCandidate(c.id, c.name)}>
                     Delete
                   </button>
                 </div>

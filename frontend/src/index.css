@@ -108,6 +108,73 @@ nav { display: flex; gap: .5rem; }
 
 .voted-message { text-align: center; font-size: .95rem; color: #16a34a; font-weight: 500; }
 
+/* ── Candidate photo ── */
+.candidate-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* ── Admin image upload ── */
+.image-upload-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-top: .75rem;
+  flex-wrap: wrap;
+}
+.upload-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .65rem 1rem;
+  background: #f1f5f9;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  font-size: .9rem;
+  color: #475569;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  white-space: nowrap;
+}
+.upload-label:hover { background: #e2e8f0; border-color: #94a3b8; }
+
+.image-preview-wrap { position: relative; display: inline-flex; }
+.image-preview {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+}
+.btn-clear-img {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  font-size: .65rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ── Admin list thumbnail ── */
+.admin-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
 /* ── Common buttons ── */
 .btn-primary {
   background: #3b82f6; color: #fff;

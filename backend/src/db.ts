@@ -9,6 +9,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
+    image TEXT DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -19,5 +20,8 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 `);
+
+// Migration: add image column to existing databases
+try { db.exec('ALTER TABLE candidates ADD COLUMN image TEXT DEFAULT NULL'); } catch { /* already exists */ }
 
 export default db;
